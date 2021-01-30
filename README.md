@@ -1,2 +1,0 @@
-# aydogan
-git init

@@ -1,21 +1,8 @@
-const http = require('http');
-const express = require('express');
-const app = express();
-app.get("/", (request, response) => {
-  console.log("Botu açık tutmak için yeniden bağlandım!");
-  response.sendStatus(200);
-});
-app.listen(8000);
-setInterval(() => {
-  http.get(`https://grandpre.glitch.me`);
-}, 280000)
 const Discord = require('discord.js');
-const client = new Discord.Client();
+const client = new Discord.Client({ disableMentions: 'everyone' });
 const ayarlar = require('./ayarlar.json');
-const chalk = require('chalk');
 const fs = require('fs');
 const moment = require('moment');
-const db = require('quick.db')
 require('./util/eventLoader')(client);
 
 var prefix = ayarlar.prefix;
@@ -23,14 +10,30 @@ var prefix = ayarlar.prefix;
 const log = message => {
   console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${message}`);
 };
+const i = await db.fetch(`ssaass_${msg.guild.id}`);
+    if (i == 'acik') {
+      if (msg.content.toLowerCase() == 'sa' || msg.content.toLowerCase() == 's.a' || msg.content.toLowerCase() == 'selamun aleyküm') {
+          try {
 
+                  return msg.reply('Aleyküm Selam, Hoşgeldin')
+          } catch(err) {
+            console.log(err);
+          }
+      }
+    }
+    else if (i == 'kapali') {
+      
+    }
+    if (!i) return;
+  
+    });
 client.commands = new Discord.Collection();
 client.aliases = new Discord.Collection();
-fs.readdir('./komutlar/', (err, files) => {
+fs.readdir("./komutlar/", (err, files) => {
   if (err) console.error(err);
   log(`${files.length} komut yüklenecek.`);
   files.forEach(f => {
-        let props = require(`./komutlar/${f}`);
+    let props = require(`./komutlar/${f}`);
     log(`Yüklenen komut: ${props.help.name}.`);
     client.commands.set(props.help.name, props);
     props.conf.aliases.forEach(alias => {
@@ -38,51 +41,6 @@ fs.readdir('./komutlar/', (err, files) => {
     });
   });
 });
-
-	 client.on("message", async msg => {
-    if (msg.channel.type === "dm") return;
-      if(msg.author.bot) return;  
-        if (msg.content.length > 4) {
-         if (db.fetch(`capslock_${msg.guild.id}`)) {
-           let caps = msg.content.toUpperCase()
-           if (msg.content == caps) {
-             if (!msg.member.hasPermission("ADMINISTRATOR")) {
-               if (!msg.mentions.users.first()) {
-                 msg.delete()
-                 return msg.channel.send(`✋ ${msg.author}, Bu sunucuda büyük harf kullanımı engellenmekte!`).then(m => m.delete(5000))
-     }
-       }
-     }
-   }
-  }
-});
-
-client.on('guildMemberAdd', async (member, guild, message) => {
-    
-    let avatar = member.user.avatarURL
-    
-    var embed = new Discord.RichEmbed()
-        .setTitle("")
-        .addField("<a:discord:646528242760679424> Sunucuya hoşgeldin yeğenim!", `Hoşgeldin <@!${member.user.id}> ! Sunucuda mesaj yazmaya başlamadan önce aşağıdaki kuralları iyice oku! <a:mavitik:645976950917038090>`, true)
-        .setColor('GRAY') 
-        .setThumbnail(avatar)
-    member.send(embed)
-})
-
-client.on('guildMemberAdd', async member => {
-  
-  let tag = await db.fetch(`tag_${member.guild.id}`);
-  let tagyazi;
-  if (tag == null) tagyazi = member.setNickname(`${member.user.username}`)
-  else tagyazi = member.setNickname(`${tag} | ${member.user.username}`)
-});
-
-client.on("message", msg => {
-  
- 
-
-
-
 client.reload = command => {
   return new Promise((resolve, reject) => {
     try {
@@ -97,12 +55,11 @@ client.reload = command => {
         client.aliases.set(alias, cmd.help.name);
       });
       resolve();
-    } catch (e){
+    } catch (e) {
       reject(e);
     }
   });
 };
-
 client.load = command => {
   return new Promise((resolve, reject) => {
     try {
@@ -112,12 +69,11 @@ client.load = command => {
         client.aliases.set(alias, cmd.help.name);
       });
       resolve();
-    } catch (e){
+    } catch (e) {
       reject(e);
     }
   });
 };
-
 client.unload = command => {
   return new Promise((resolve, reject) => {
     try {
@@ -128,43 +84,24 @@ client.unload = command => {
         if (cmd === command) client.aliases.delete(alias);
       });
       resolve();
-    } catch (e){
+    } catch (e) {
       reject(e);
     }
-  })
+  });
 };
 
-client.on('message', async (msg, member, guild) => {
-  let i = await  db.fetch(`saas_${msg.guild.id}`)
-      if(i === 'açık') {
-        if (msg.content.toLowerCase() === 'sa') {
-        msg.reply('Aleyküm Selam, Hoşgeldin.');      
-      } 
-      }
-    }); 
+
+
 
 client.elevation = message => {
-  if(!message.guild) {
-	return; }
+  if (!message.guild) {
+    return;
+  }
   let permlvl = 0;
   if (message.member.hasPermission("BAN_MEMBERS")) permlvl = 2;
   if (message.member.hasPermission("ADMINISTRATOR")) permlvl = 3;
   if (message.author.id === ayarlar.sahip) permlvl = 4;
   return permlvl;
 };
-})
 
-var regToken = /[\w\d]{24}\.[\w\d]{6}\.[\w\d-_]{27}/g;
-// client.on('debug', e => {
-//   console.log(chalk.bgBlue.green(e.replace(regToken, 'that was redacted')));
-// });
-
-client.on('warn', e => {
-  console.log(chalk.bgYellow(e.replace(regToken, 'that was redacted')));
-});
-
-client.on('error', e => {
-  console.log(chalk.bgRed(e.replace(regToken, 'that was redacted')));
-});
-
-client.login(ayalar.token)
+client.login(ayarlar.token);
